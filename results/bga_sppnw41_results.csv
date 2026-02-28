@@ -1,0 +1,5 @@
+trial,cost,gens,feasible,num_columns,overlaps,uncovered,columns_used
+0,11676,1000,True,5,0,0,0 10 62 75 139
+1,11307,750,True,5,0,0,0 10 61 76 139
+2,11307,779,True,5,0,0,0 10 60 76 140
+3,11307,347,True,5,0,0,0 10 60 76 139
