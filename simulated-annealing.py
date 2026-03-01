@@ -121,7 +121,7 @@ import csv
 
 np.random.seed(24)
 
-for f_name in ['sppnw42', 'sppnw43', 'sppnw41']:
+for f_name in ['sppnw41', 'sppnw42', 'sppnw43']:
     print(f"Beginning Processing {f_name}...")
     
     output_path = f'results/sa_{f_name}_results.csv'
@@ -139,7 +139,7 @@ for f_name in ['sppnw42', 'sppnw43', 'sppnw41']:
         print(f"Current Trial: {x}")
         x0 = np.random.randint(0,2,N_COLS,dtype=bool) # Random init
 
-        best, num_gens = simulated_annealing(x0=x0, max_iter=1000, t0=15000, t1=12, zero_w_range=ZERO_W_RANGE, overlap_w_range=OVERLAP_W_RANGE, verbose=True)
+        best, num_gens = simulated_annealing(x0=x0, max_iter=1000000, t0=15000, t1=12, zero_w_range=ZERO_W_RANGE, overlap_w_range=OVERLAP_W_RANGE, verbose=True)
 
         best_cols = COL_ROWS[best]
         row_sums = np.sum(best_cols, axis=0)

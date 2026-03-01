@@ -6,7 +6,7 @@ from src.setup import load_sppwn
 
 INDIVIDUAL_SHAPE =  None; POPULATION_SIZE = None; 
 NUM_PARENTS = None; NUM_CHILDREN = None; NUM_ELITES = None
-POPULATION_SHAPE = None; MUTATION_RATE = None; INIT_SELECT_RATE = None
+POPULATION_SHAPE = None; INIT_SELECT_RATE = None
 
 
 # Fitness Functions
@@ -278,7 +278,6 @@ for f_name in ['sppnw42', 'sppnw41', 'sppnw43']:
 
     POPULATION_SHAPE = (POPULATION_SIZE, INDIVIDUAL_SHAPE)
 
-    MUTATION_RATE = 4.0 / N_COLS #4.0 / N_COLS #N_COLS # want around 2-6 columns changed per mutation
     INIT_SELECT_RATE = 10.0 / N_COLS # only want to start with around 10 columns selected, otherwise we get stuck in massively costly and unfit solutions
     # ---
 
