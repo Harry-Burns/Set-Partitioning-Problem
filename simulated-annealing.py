@@ -95,12 +95,12 @@ def simulated_annealing(x0: np.ndarray|None=None, max_iter: int=10000, t0: float
         cost_new = cost(x_new); penalty_new = penalty(x_new, zero_w=zero_w, overlap_w=overlap_w); 
         fit_new = cost_new + penalty_new
 
-        fit_best = fitness(best, zero_w=zero_w, overlap_w=overlap_w) # recalculate with updated weights
-
         if probability(fit_new, fit, t) > np.random.rand():
             x = x_new; fit = fit_new
         
-        if not best_is_feas and penalty_new == 0:
+        fit_best = fitness(best, zero_w=zero_w, overlap_w=overlap_w) # recalculate with updated weights
+        
+        if not best_is_feas and penalty_new == 0: # Once best_is_feas, any better solution also needs to be feasible
             best_is_feas = True
             best = x.copy(); fit_best = fit; cost_best = cost_new
         elif fit < fit_best and bool(penalty_new) != best_is_feas:
