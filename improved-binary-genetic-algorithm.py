@@ -1,10 +1,22 @@
+import os
+import csv
 import numpy as np
 
 def load_sppwn(f_name):
     file_path = f'data/{f_name}.txt'
 
-    with open(file_path, 'r') as f:
-        data = f.readlines()
+    try:
+        with open(file_path, 'r') as f:
+            data = f.readlines()
+    except FileNotFoundError as fnfe:
+        print(f"File not found in '/data/{f_name}'', trying '/{f_name}.txt'...")
+        file_path = f'{f_name}.txt'
+        try:
+            with open(file_path, 'r') as f:
+                data = f.readlines()
+        except FileNotFoundError as fnfe:
+            print("File not found!")
+            raise FileNotFoundError("Data file not found. Exiting...")
 
     data = [[int(x) for x in d.strip().split()] for d in data]
     
@@ -26,6 +38,7 @@ def load_sppwn(f_name):
 INDIVIDUAL_SHAPE =  None; POPULATION_SIZE = None; 
 NUM_PARENTS = None; NUM_CHILDREN = None; NUM_ELITES = None
 POPULATION_SHAPE = None; MUTATION_RATE = None; INIT_SELECT_RATE = None
+STOCHASTIC_ITER = None; STOCHASTIC_PROB = None
 
 
 # --- Help Handle Termination (Quit if diversity is too low)
@@ -64,10 +77,10 @@ def initialization(pop_size):
 # ----
 
 # ---- Requirement 3.2 - Stochastic Ranking
-def stochastic_ranking(costs: np.ndarray, penalties: np.ndarray, N: int=10, pf: float=0.45) -> np.ndarray:
-    I = np.arange(costs.shape[0])
+def stochastic_ranking(costs: np.ndarray, penalties: np.ndarray) -> np.ndarray:
+    I = np.random.permutation(costs.shape[0])
 
-    for i in range(N):
+    for i in range(STOCHASTIC_ITER):
         has_swapped = False
 
         for j in range(costs.shape[0] - 1):
@@ -75,7 +88,7 @@ def stochastic_ranking(costs: np.ndarray, penalties: np.ndarray, N: int=10, pf: 
 
             u = np.random.rand()
 
-            if (penalties[a] == 0 and penalties[b] == 0) or u < pf:
+            if (penalties[a] == 0 and penalties[b] == 0) or u < STOCHASTIC_PROB:
                 if costs[a] > costs[b]:
                     I[j], I[j+1] = I[j+1], I[j]
                     has_swapped = True
@@ -210,7 +223,7 @@ def improved_binary_genetic_algorithm(p0: np.ndarray, max_iter=10000, verbose=Fa
         p_combined_cost,p_combined_pen = fitness(p_combined)
         p_combined_rank = stochastic_ranking(p_combined_cost,p_combined_pen)
 
-        elite_idx = p_rank[:NUM_ELITES]
+        elite_idx = elite_idx = np.lexsort((p_cost, p_pen))[:NUM_ELITES]
         remaining = POPULATION_SIZE - NUM_ELITES
 
         rem_rank_idx = p_combined_rank[~np.isin(p_combined_rank, elite_idx)]
@@ -247,11 +260,7 @@ def improved_binary_genetic_algorithm(p0: np.ndarray, max_iter=10000, verbose=Fa
 
 
 
-np.random.seed(21)
-
-import csv
-
-for f_name in ['sppnw42', 'sppnw41', 'sppnw43']:
+for f_name in ['sppnw42', 'sppnw43']:
     print(f"Beginning Processing {f_name}...")
     
     output_path = f'results/ibga_{f_name}_results.csv'
@@ -271,6 +280,9 @@ for f_name in ['sppnw42', 'sppnw41', 'sppnw43']:
 
     MUTATION_RATE = 4.0 / N_COLS #N_COLS # want around 2-6 columns changed per mutation
     MAX_ITER = 1000
+
+    STOCHASTIC_PROB = 0.45
+    STOCHASTIC_ITER = POPULATION_SIZE // 2
     # --------------
 
     # --- Heuristic Parameters
@@ -282,6 +294,7 @@ for f_name in ['sppnw42', 'sppnw41', 'sppnw43']:
     # NUMBER OF TRIALS
     TRIALS = 30
 
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['trial', 'cost', 'gens', 'feasible', 'num_columns', 'overlaps', 'uncovered', 'columns_used'])
@@ -297,6 +310,7 @@ for f_name in ['sppnw42', 'sppnw41', 'sppnw43']:
 
         feasible = np.all(row_sums == 1)
         cols_used = np.where(best)[0]
+
 
         with open(output_path, 'a', newline='') as f:
             writer = csv.writer(f)
