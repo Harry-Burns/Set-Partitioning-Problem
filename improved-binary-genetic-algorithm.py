@@ -282,7 +282,7 @@ for f_name in ['sppnw42', 'sppnw43']:
     MAX_ITER = 1000
 
     STOCHASTIC_PROB = 0.45
-    STOCHASTIC_ITER = POPULATION_SIZE // 2
+    STOCHASTIC_ITER = POPULATION_SIZE
     # --------------
 
     # --- Heuristic Parameters
