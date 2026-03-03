@@ -1,5 +1,24 @@
 import numpy as np
-from src.setup import load_sppwn
+
+def load_sppwn(f_name):
+    file_path = f'data/{f_name}.txt'
+
+    with open(file_path, 'r') as f:
+        data = f.readlines()
+
+    data = [[int(x) for x in d.strip().split()] for d in data]
+    
+    N_ROWS,N_COLS = data[0]
+
+    COL_COSTS = np.array([d[0] for d in data[1:]])
+    COL_ROWS = np.array([np.isin(np.arange(1,N_ROWS+1), d[2:]) for d in data[1:]])
+
+    if f_name == 'sppnw41': TARGET_OPTIMAL = 11307
+    elif f_name == 'sppnw42': TARGET_OPTIMAL = 7656
+    elif f_name == 'sppnw43': TARGET_OPTIMAL = 8904
+    else: TARGET_OPTIMAL = 0
+
+    return (N_ROWS,N_COLS), COL_COSTS, COL_ROWS, TARGET_OPTIMAL
 
 (N_ROWS,N_COLS), COL_COSTS, COL_ROWS, TARGET_OPTIMAL = (None,None),None,None,None
 
@@ -127,19 +146,26 @@ for f_name in ['sppnw41', 'sppnw42', 'sppnw43']:
     output_path = f'results/sa_{f_name}_results.csv'
 
     (N_ROWS,N_COLS), COL_COSTS, COL_ROWS, TARGET_OPTIMAL = load_sppwn(f_name)
-    ZERO_W_RANGE = (2000,10000); OVERLAP_W_RANGE = (1000,10000)
+
+    # --- Simulated Annealing Parameters ---
+    ZERO_W_RANGE = (2000,10000)
+    OVERLAP_W_RANGE = (1000,10000)
+    T0 = 15000; T1 = 12
+    MAX_ITER = 1000000
+    # ---
+
+    # NUMBER OF TRIALS
+    TRIALS = 30
 
     with open(output_path, 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['trial', 'cost', 'gens', 'feasible', 'num_columns', 'overlaps', 'uncovered', 'columns_used'])
 
-    TRIALS = 30
-
     for x in range(TRIALS):
         print(f"Current Trial: {x}")
         x0 = np.random.randint(0,2,N_COLS,dtype=bool) # Random init
 
-        best, num_gens = simulated_annealing(x0=x0, max_iter=1000000, t0=15000, t1=12, zero_w_range=ZERO_W_RANGE, overlap_w_range=OVERLAP_W_RANGE, verbose=True)
+        best, num_gens = simulated_annealing(x0=x0, max_iter=MAX_ITER, t0=T0, t1=T1, zero_w_range=ZERO_W_RANGE, overlap_w_range=OVERLAP_W_RANGE, verbose=True)
 
         best_cols = COL_ROWS[best]
         row_sums = np.sum(best_cols, axis=0)

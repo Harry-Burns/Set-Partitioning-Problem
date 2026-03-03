@@ -1,5 +1,24 @@
 import numpy as np
-from src.setup import load_sppwn
+
+def load_sppwn(f_name):
+    file_path = f'data/{f_name}.txt'
+
+    with open(file_path, 'r') as f:
+        data = f.readlines()
+
+    data = [[int(x) for x in d.strip().split()] for d in data]
+    
+    N_ROWS,N_COLS = data[0]
+
+    COL_COSTS = np.array([d[0] for d in data[1:]])
+    COL_ROWS = np.array([np.isin(np.arange(1,N_ROWS+1), d[2:]) for d in data[1:]])
+
+    if f_name == 'sppnw41': TARGET_OPTIMAL = 11307
+    elif f_name == 'sppnw42': TARGET_OPTIMAL = 7656
+    elif f_name == 'sppnw43': TARGET_OPTIMAL = 8904
+    else: TARGET_OPTIMAL = 0
+
+    return (N_ROWS,N_COLS), COL_COSTS, COL_ROWS, TARGET_OPTIMAL
 
 
 (N_ROWS,N_COLS), COL_COSTS, COL_ROWS, TARGET_OPTIMAL = (None,None),None,None,None
@@ -251,6 +270,7 @@ for f_name in ['sppnw42', 'sppnw41', 'sppnw43']:
     POPULATION_SHAPE = (POPULATION_SIZE, INDIVIDUAL_SHAPE)
 
     MUTATION_RATE = 4.0 / N_COLS #N_COLS # want around 2-6 columns changed per mutation
+    MAX_ITER = 1000
     # --------------
 
     # --- Heuristic Parameters
@@ -259,18 +279,18 @@ for f_name in ['sppnw42', 'sppnw41', 'sppnw43']:
     COL_COST_PER_ROW[coverage == 0] = np.inf
     # --------
 
+    # NUMBER OF TRIALS
+    TRIALS = 30
 
     with open(output_path, 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['trial', 'cost', 'gens', 'feasible', 'num_columns', 'overlaps', 'uncovered', 'columns_used'])
 
-    TRIALS = 30
-
     for x in range(TRIALS):
         print(f"Current Trial: {x}")
 
         p0 = initialization(POPULATION_SIZE)
-        best, num_gens = improved_binary_genetic_algorithm(p0=p0, max_iter=1000, verbose=True)
+        best, num_gens = improved_binary_genetic_algorithm(p0=p0, max_iter=MAX_ITER, verbose=True)
 
         best_cols = COL_ROWS[best]
         row_sums = np.sum(best_cols, axis=0)
