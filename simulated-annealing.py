@@ -1,10 +1,22 @@
+import os
+import csv
 import numpy as np
 
 def load_sppwn(f_name):
     file_path = f'data/{f_name}.txt'
 
-    with open(file_path, 'r') as f:
-        data = f.readlines()
+    try:
+        with open(file_path, 'r') as f:
+            data = f.readlines()
+    except FileNotFoundError as fnfe:
+        print(f"File not found in '/data/{f_name}'', trying '/{f_name}.txt'...")
+        file_path = f'{f_name}.txt'
+        try:
+            with open(file_path, 'r') as f:
+                data = f.readlines()
+        except FileNotFoundError as fnfe:
+            print("File not found!")
+            raise FileNotFoundError("Data file not found. Exiting...")
 
     data = [[int(x) for x in d.strip().split()] for d in data]
     
@@ -136,10 +148,6 @@ def simulated_annealing(x0: np.ndarray|None=None, max_iter: int=10000, t0: float
 
 
 
-import csv
-
-np.random.seed(24)
-
 for f_name in ['sppnw41', 'sppnw42', 'sppnw43']:
     print(f"Beginning Processing {f_name}...")
     
@@ -157,6 +165,7 @@ for f_name in ['sppnw41', 'sppnw42', 'sppnw43']:
     # NUMBER OF TRIALS
     TRIALS = 30
 
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['trial', 'cost', 'gens', 'feasible', 'num_columns', 'overlaps', 'uncovered', 'columns_used'])
